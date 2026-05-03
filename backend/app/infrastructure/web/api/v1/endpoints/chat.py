@@ -118,14 +118,18 @@ async def send_message(
             async for line in agent_proxy.stream_chat(
                 messages=agent_messages,
                 thread_id=str(session_id),
-                user_metadata={"user_id": str(current_user.id)},
+                user_metadata={
+                    "user_id": str(current_user.id),
+                    "username": current_user.username,
+                    "role": current_user.role.value,
+                },
             ):
                 if await request.is_disconnected():
                     logger.info("Client disconnected during stream for session %s", session_id)
                     break
 
-                # Forward line immediately
-                yield line
+                # Forward line immediately (add \n since aiter_lines strips it)
+                yield line + "\n"
 
                 # Parse for bookkeeping
                 if line.startswith("data: "):

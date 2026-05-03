@@ -27,6 +27,7 @@ import { EventsPage } from '@/pages/Events/EventsPage';
 import { EventDetailPage } from '@/pages/EventDetail/EventDetailPage';
 import { HelpPage } from '@/pages/Help/HelpPage';
 import { PageTransition } from '@/components/ui/PageTransition';
+import { ChatBubbleButton } from '@/components/chat/ChatBubbleButton';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -85,6 +86,7 @@ function App() {
     <>
       <AnimatedRoutes />
       <Toast />
+      <ChatBubbleButton />
     </>
   );
 }

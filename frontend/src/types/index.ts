@@ -623,3 +623,5 @@ export interface ModalState {
   type: string;
   data?: unknown;
 }
+
+export type { ChatSession, ChatMessage, StreamEvent, StreamEventType, StreamingStep } from './chat';
