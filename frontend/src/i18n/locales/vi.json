@@ -920,5 +920,26 @@
         "a": "Vào Cài đặt → phần Mật khẩu. Nhập mật khẩu hiện tại, sau đó nhập mật khẩu mới (tối thiểu 8 ký tự). Xác nhận mật khẩu mới và nhấn \"Lưu thay đổi\". Mật khẩu mới phải khác mật khẩu hiện tại."
       }
     }
+  },
+  "chat": {
+    "title": "AI Trợ lý",
+    "new_chat": "Cuộc trò chuyện mới",
+    "history": "Lịch sử trò chuyện",
+    "placeholder": "Nhập tin nhắn...",
+    "send": "Gửi",
+    "stop": "Dừng",
+    "empty_title": "Bắt đầu cuộc trò chuyện",
+    "empty_subtitle": "Hỏi tôi bất cứ điều gì về vấn đề, ý tưởng hoặc đổi mới",
+    "sessions_title": "Lịch sử trò chuyện",
+    "no_sessions": "Chưa có cuộc trò chuyện nào",
+    "rename": "Đổi tên",
+    "delete_chat": "Xóa cuộc trò chuyện",
+    "confirm_delete": "Bạn có chắc chắn muốn xóa cuộc trò chuyện này? Hành động này không thể hoàn tác.",
+    "sources": "Nguồn tham khảo",
+    "streaming_error": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "session_default_title": "Cuộc trò chuyện mới",
+    "suggest_innovation": "Innovation Hub là gì?",
+    "suggest_problem": "Tóm tắt các vấn đề gần đây",
+    "suggest_idea": "Hệ thống bình chọn ý tưởng hoạt động như thế nào?"
   }
 }

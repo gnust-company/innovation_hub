@@ -71,7 +71,8 @@ class AgentProxyService:
                     return
 
                 async for line in response.aiter_lines():
-                    yield line
+                    if line:  # skip empty lines
+                        yield line + "\n"
 
         except httpx.ConnectError as exc:
             logger.error("Cannot connect to Agent BE at %s: %s", url, exc)
