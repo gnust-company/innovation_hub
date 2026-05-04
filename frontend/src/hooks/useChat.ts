@@ -123,14 +123,12 @@ export function useChat() {
               }
               break;
             case 'done': {
-              // Backend saves the message regardless of active session
-              // Only update UI if user is still viewing this session
               if (active) {
                 flushThinking();
                 const msg: ChatMessage = {
                   id: `msg-${Date.now()}`,
                   role: 'assistant',
-                  content: fullContent,
+                  content: hasToolCalls ? answerContent : fullContent,
                   sources: sources ? { files: sources } : null,
                   created_at: new Date().toISOString(),
                 };
@@ -157,7 +155,7 @@ export function useChat() {
         const msg: ChatMessage = {
           id: `msg-${Date.now()}`,
           role: 'assistant',
-          content: fullContent,
+          content: hasToolCalls ? answerContent : fullContent,
           sources: sources ? { files: sources } : null,
           created_at: new Date().toISOString(),
         };

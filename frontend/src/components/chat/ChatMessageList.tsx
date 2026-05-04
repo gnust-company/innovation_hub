@@ -41,7 +41,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, userAvatarUrl, u
           {isUser ? (
             <p className="whitespace-pre-wrap break-words">{message.content}</p>
           ) : (
-            <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-pre:my-1.5 prose-blockquote:my-1.5 prose-hr:my-2">
+            <div className="prose prose-sm max-w-none break-words [word-break:break-word] prose-p:my-1.5 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-pre:my-1.5 prose-blockquote:my-1.5 prose-hr:my-2">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
             </div>
           )}
@@ -77,7 +77,7 @@ const StreamingBubble: React.FC<StreamingBubbleProps> = ({ content }) => {
       <div className="max-w-[85%]">
         <div className="rounded-standard px-3 py-2 text-sm leading-relaxed bg-secondary text-foreground">
           {content ? (
-            <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-pre:my-1.5 prose-blockquote:my-1.5 prose-hr:my-2">
+            <div className="prose prose-sm max-w-none break-words [word-break:break-word] prose-p:my-1.5 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0 prose-pre:my-1.5 prose-blockquote:my-1.5 prose-hr:my-2">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
             </div>
           ) : (

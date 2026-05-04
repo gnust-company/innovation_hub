@@ -20,6 +20,10 @@ class ChatSession:
         self.title = title
         self.updated_at = datetime.utcnow()
 
+    def touch(self) -> None:
+        """Update timestamp to reflect recent activity."""
+        self.updated_at = datetime.utcnow()
+
     def is_owned_by(self, user_id: UUID) -> bool:
         """Check if session belongs to user."""
         return self.user_id == user_id

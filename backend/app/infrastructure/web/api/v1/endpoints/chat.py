@@ -104,6 +104,10 @@ async def send_message(
         message_repo, session_id, ChatRole.USER, data.content
     )
 
+    # 2b. Touch session so it sorts to top in recent-activity order
+    session.touch()
+    await session_repo.update(session)
+
     # 3. Load full conversation history
     messages = await message_repo.list_by_session(session_id)
     agent_messages = [{"role": m.role.value, "content": m.content} for m in messages]
@@ -141,6 +145,8 @@ async def send_message(
                             content = payload.get("content", "")
                             if content:
                                 collected_parts.append(content)
+                        elif event_type == "tool_call":
+                            collected_parts.clear()
                         elif event_type == "sources":
                             collected_sources = payload.get("files")
                         elif event_type == "done":
