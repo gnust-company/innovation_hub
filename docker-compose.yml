@@ -87,4 +87,5 @@ services:
 
 networks:
   innovation_hub_network:
+    name: innovation_hub_network
     driver: bridge
