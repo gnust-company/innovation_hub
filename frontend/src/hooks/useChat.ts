@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useChatStore } from '@/stores/chatStore';
 import { chatApi } from '@/api/chat';
 import type { ChatMessage, StreamEvent, StreamingStep } from '@/types/chat';
@@ -12,22 +12,9 @@ function parseSSELine(line: string): StreamEvent | null {
   }
 }
 
-let activeAbort: AbortController | null = null;
-
-/** Hard abort — only used when sending a NEW message (can't have 2 streams). */
-export function abortActiveStream() {
-  activeAbort?.abort();
-  activeAbort = null;
-  const s = useChatStore.getState();
-  if (s.isStreaming) {
-    s.setStreaming(false);
-    s.setStreamingContent('');
-    s.setStreamingSources([]);
-    s.setStreamingSessionId(null);
-  }
-}
-
 export function useChat() {
+  const abortRef = useRef<AbortController | null>(null);
+
   const sendMessage = useCallback(async (content: string) => {
     const store = useChatStore.getState();
     if (!content.trim() || store.isStreaming) return;
@@ -37,8 +24,8 @@ export function useChat() {
     store.clearError();
 
     // Abort any previous stream — can't have two simultaneous streams
-    activeAbort?.abort();
-    activeAbort = new AbortController();
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
 
     try {
       let sessionId = store.currentSessionId;
@@ -189,8 +176,8 @@ export function useChat() {
   }, []);
 
   const stopStreaming = useCallback(() => {
-    activeAbort?.abort();
-    activeAbort = null;
+    abortRef.current?.abort();
+    abortRef.current = null;
     useChatStore.getState().setStreaming(false);
   }, []);
 
