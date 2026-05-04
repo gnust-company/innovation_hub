@@ -923,7 +923,7 @@
   },
   "chat": {
     "title": "AI Trợ lý",
-    "new_chat": "Cuộc trò chuyện mới",
+    "new_chat": "Hội thoại mới",
     "history": "Lịch sử trò chuyện",
     "placeholder": "Nhập tin nhắn...",
     "send": "Gửi",
@@ -939,7 +939,7 @@
     "streaming_error": "Đã xảy ra lỗi. Vui lòng thử lại.",
     "session_default_title": "Cuộc trò chuyện mới",
     "suggest_innovation": "Innovation Hub là gì?",
-    "suggest_problem": "Tóm tắt các vấn đề gần đây",
+    "suggest_problem": "Làm sao để submit một vấn đề?",
     "suggest_idea": "Hệ thống bình chọn ý tưởng hoạt động như thế nào?"
   }
 }

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { X, MessageSquarePlus, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { X, MessageSquarePlus, PanelLeftClose, PanelLeft, Maximize2, Minimize2 } from 'lucide-react';
 import { useChatStore } from '@/stores/chatStore';
 import { ChatSidebar } from './ChatSidebar';
 import { ChatMessageList } from './ChatMessageList';
@@ -21,17 +21,25 @@ const mobileVariants = {
   exit: { y: '100%', transition: { duration: 0.15 } },
 };
 
+const fullscreenVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.15 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+};
+
 export const ChatPanel: React.FC = () => {
   const { t } = useTranslation();
   const closePanel = useChatStore((s) => s.closePanel);
   const showSidebar = useChatStore((s) => s.showSidebar);
   const setShowSidebar = useChatStore((s) => s.setShowSidebar);
+  const isFullscreen = useChatStore((s) => s.isFullscreen);
+  const toggleFullscreen = useChatStore((s) => s.toggleFullscreen);
   const startNewChat = useChatStore((s) => s.startNewChat);
   const currentSessionId = useChatStore((s) => s.currentSessionId);
 
   const handleNewChat = () => {
     startNewChat();
-  }
+  };
 
   return (
     <>
@@ -64,43 +72,83 @@ export const ChatPanel: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Desktop: chat area is ALWAYS CHAT_WIDTH, sidebar adds extra width */}
-      <motion.div
-        className="hidden md:flex fixed bottom-24 right-6 z-50 h-[600px]
-          bg-card border border-border rounded-feature shadow-clay-lg
-          flex-col overflow-hidden"
-        variants={panelVariants}
-        initial="hidden"
-        animate={{
-          ...panelVariants.visible,
-          width: showSidebar ? CHAT_WIDTH + SIDEBAR_WIDTH : CHAT_WIDTH,
-        }}
-        exit="exit"
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-      >
-        <ChatPanelHeader
-          title={currentSessionId ? t('chat.title') : t('chat.new_chat')}
-          onClose={closePanel}
-          onToggleSidebar={() => setShowSidebar(!showSidebar)}
-          onNewChat={handleNewChat}
-          showSidebar={showSidebar}
-        />
-        <div className="flex-1 flex overflow-hidden">
-          <motion.div
-            className="border-r border-border overflow-hidden flex-shrink-0"
-            animate={{ width: showSidebar ? SIDEBAR_WIDTH : 0, opacity: showSidebar ? 1 : 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          >
-            <div style={{ width: SIDEBAR_WIDTH }} className="h-full">
-              <ChatSidebar />
+      {/* Desktop: fullscreen — below header, sidebar overlaps Hub sidebar */}
+      {isFullscreen && (
+        <motion.div
+          className="hidden md:flex fixed top-16 left-0 right-0 bottom-0 z-50 bg-card border-t border-border flex-col"
+          variants={fullscreenVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <ChatPanelHeader
+            title={currentSessionId ? t('chat.title') : t('chat.new_chat')}
+            onClose={closePanel}
+            onToggleSidebar={() => setShowSidebar(!showSidebar)}
+            onNewChat={handleNewChat}
+            showSidebar={showSidebar}
+            isFullscreen={true}
+            onToggleFullscreen={toggleFullscreen}
+          />
+          <div className="flex-1 flex overflow-hidden">
+            <motion.div
+              className="border-r border-border overflow-hidden flex-shrink-0"
+              animate={{ width: SIDEBAR_WIDTH, opacity: 1 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            >
+              <div style={{ width: SIDEBAR_WIDTH }} className="h-full">
+                <ChatSidebar />
+              </div>
+            </motion.div>
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <ChatMessageList />
+              <ChatMessageInput />
             </div>
-          </motion.div>
-          <div style={{ width: CHAT_WIDTH, flexShrink: 0 }} className="flex flex-col overflow-hidden">
-            <ChatMessageList />
-            <ChatMessageInput />
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
+
+      {/* Desktop: normal panel */}
+      {!isFullscreen && (
+        <motion.div
+          className="hidden md:flex fixed bottom-24 right-6 z-50 h-[600px]
+            bg-card border border-border rounded-feature shadow-clay-lg
+            flex-col overflow-hidden"
+          variants={panelVariants}
+          initial="hidden"
+          animate={{
+            ...panelVariants.visible,
+            width: showSidebar ? CHAT_WIDTH + SIDEBAR_WIDTH : CHAT_WIDTH,
+          }}
+          exit="exit"
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        >
+          <ChatPanelHeader
+            title={currentSessionId ? t('chat.title') : t('chat.new_chat')}
+            onClose={closePanel}
+            onToggleSidebar={() => setShowSidebar(!showSidebar)}
+            onNewChat={handleNewChat}
+            showSidebar={showSidebar}
+            isFullscreen={false}
+            onToggleFullscreen={toggleFullscreen}
+          />
+          <div className="flex-1 flex overflow-hidden">
+            <motion.div
+              className="border-r border-border overflow-hidden flex-shrink-0"
+              animate={{ width: showSidebar ? SIDEBAR_WIDTH : 0, opacity: showSidebar ? 1 : 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            >
+              <div style={{ width: SIDEBAR_WIDTH }} className="h-full">
+                <ChatSidebar />
+              </div>
+            </motion.div>
+            <div style={{ width: CHAT_WIDTH, flexShrink: 0 }} className="flex flex-col overflow-hidden">
+              <ChatMessageList />
+              <ChatMessageInput />
+            </div>
+          </div>
+        </motion.div>
+      )}
     </>
   );
 };
@@ -111,9 +159,14 @@ interface HeaderProps {
   onToggleSidebar: () => void;
   onNewChat: () => void;
   showSidebar: boolean;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
-const ChatPanelHeader: React.FC<HeaderProps> = ({ title, onClose, onToggleSidebar, onNewChat, showSidebar }) => (
+const ChatPanelHeader: React.FC<HeaderProps> = ({
+  title, onClose, onToggleSidebar, onNewChat, showSidebar,
+  isFullscreen, onToggleFullscreen,
+}) => (
   <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card flex-shrink-0">
     <div className="flex items-center gap-2">
       <button
@@ -132,6 +185,13 @@ const ChatPanelHeader: React.FC<HeaderProps> = ({ title, onClose, onToggleSideba
         title="New chat"
       >
         <MessageSquarePlus className="w-4 h-4" />
+      </button>
+      <button
+        onClick={onToggleFullscreen}
+        className="p-1.5 rounded-standard text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+        title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+      >
+        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
       </button>
       <button
         onClick={onClose}

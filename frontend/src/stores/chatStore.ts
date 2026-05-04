@@ -5,6 +5,7 @@ import type { ChatSession, ChatMessage, StreamingStep } from '@/types/chat';
 interface ChatState {
   isPanelOpen: boolean;
   showSidebar: boolean;
+  isFullscreen: boolean;
 
   sessions: ChatSession[];
   currentSessionId: string | null;
@@ -25,6 +26,7 @@ interface ChatState {
   closePanel: () => void;
   togglePanel: () => void;
   setShowSidebar: (show: boolean) => void;
+  toggleFullscreen: () => void;
 
   // Sessions
   fetchSessions: () => Promise<void>;
@@ -53,6 +55,7 @@ interface ChatState {
 export const useChatStore = create<ChatState>((set, get) => ({
   isPanelOpen: false,
   showSidebar: true,
+  isFullscreen: false,
   sessions: [],
   currentSessionId: null,
   messages: [],
@@ -75,6 +78,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
   setShowSidebar: (show) => set({ showSidebar: show }),
+
+  toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen, showSidebar: true })),
 
   fetchSessions: async () => {
     set({ isLoadingSessions: true, error: null });
