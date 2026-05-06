@@ -30,6 +30,7 @@ class SQLUserRepository(UserRepository):
             role=UserRole(model.role),
             team=model.team,
             avatar_url=model.avatar_url,
+            llm_api_key=model.llm_api_key,
             is_active=model.is_active,
             created_at=model.created_at,
             updated_at=model.updated_at
@@ -46,6 +47,7 @@ class SQLUserRepository(UserRepository):
             role=entity.role.value,
             team=entity.team,
             avatar_url=entity.avatar_url,
+            llm_api_key=entity.llm_api_key,
             is_active=entity.is_active,
             created_at=entity.created_at,
             updated_at=entity.updated_at
@@ -138,6 +140,7 @@ class SQLUserRepository(UserRepository):
         model.role = user.role.value
         model.team = user.team
         model.avatar_url = user.avatar_url
+        model.llm_api_key = user.llm_api_key
         model.is_active = user.is_active
         model.updated_at = user.updated_at
         

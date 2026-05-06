@@ -1,7 +1,24 @@
 import { useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/stores/chatStore';
 import { chatApi } from '@/api/chat';
 import type { ChatMessage, StreamEvent, StreamingStep } from '@/types/chat';
+
+const ERROR_KEY_MAP: Record<string, string> = {
+  NO_API_KEY: 'chat.error_no_api_key',
+  AUTH_FAILED: 'chat.error_auth_failed',
+  RATE_LIMITED: 'chat.error_rate_limited',
+  TIMEOUT: 'chat.error_timeout',
+  CONNECTION_ERROR: 'chat.error_connection',
+  STREAM_ERROR: 'chat.error_stream',
+};
+
+function mapSSEError(content: string): string {
+  if (ERROR_KEY_MAP[content]) return ERROR_KEY_MAP[content];
+  // If it's a raw error code we don't recognize, return generic
+  if (content.length < 30 && /^[A-Z_]+$/.test(content)) return 'chat.error_stream';
+  return content;
+}
 
 function parseSSELine(line: string): StreamEvent | null {
   if (!line.startsWith('data: ')) return null;
@@ -13,6 +30,7 @@ function parseSSELine(line: string): StreamEvent | null {
 }
 
 export function useChat() {
+  const { t } = useTranslation();
   const abortRef = useRef<AbortController | null>(null);
 
   const sendMessage = useCallback(async (content: string) => {
@@ -140,7 +158,8 @@ export function useChat() {
             }
             case 'error':
               if (active) {
-                useChatStore.getState().setError(event.content || 'Streaming error');
+                const errorKey = mapSSEError(event.content || '');
+                useChatStore.getState().setError(t(errorKey));
                 useChatStore.getState().setStreaming(false);
               }
               useChatStore.getState().setStreamingSessionId(null);

@@ -16,10 +16,12 @@ from app.application.dto.chat_dto import (
 )
 from app.application.services.agent_proxy_service import AgentProxyService
 from app.application.services.chat_session_service import ChatSessionService
+from app.core.config import get_settings
 from app.domain.entities.chat_message import ChatMessage
 from app.domain.value_objects.chat_role import ChatRole
 from app.infrastructure.database.repositories.chat_session_repository_impl import SQLChatSessionRepository
 from app.infrastructure.database.repositories.chat_message_repository_impl import SQLChatMessageRepository
+from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
 
@@ -90,8 +92,18 @@ async def send_message(
     session_repo: SQLChatSessionRepository = Depends(deps.get_chat_session_repo),
     message_repo: SQLChatMessageRepository = Depends(deps.get_chat_message_repo),
     agent_proxy: AgentProxyService = Depends(deps.get_agent_proxy_service),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
 ):
     """Send a message and stream the AI response via SSE."""
+    # 0. Load user's LLM API key
+    user = await user_repo.get_by_id(current_user.id)
+    if not user or not user.llm_api_key:
+        return StreamingResponse(
+            iter([f"data: {json.dumps({'type': 'error', 'content': 'NO_API_KEY'})}\n\n"]),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+        )
+
     # 1. Verify session ownership
     session = await session_repo.get_by_id(session_id)
     if not session:
@@ -127,6 +139,7 @@ async def send_message(
                     "username": current_user.username,
                     "role": current_user.role.value,
                 },
+                llm_api_key=user.llm_api_key,
             ):
                 if await request.is_disconnected():
                     logger.info("Client disconnected during stream for session %s", session_id)
@@ -183,3 +196,10 @@ async def send_message(
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@router.get("/key-help-url")
+async def get_key_help_url():
+    """Return the help URL for getting an LLM API key. No auth required."""
+    settings = get_settings()
+    return {"url": settings.agent_key_help_url}

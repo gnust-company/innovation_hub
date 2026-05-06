@@ -39,6 +39,7 @@ class AgentProxyService:
         messages: List[Dict[str, str]],
         thread_id: Optional[str] = None,
         user_metadata: Optional[Dict[str, Any]] = None,
+        llm_api_key: Optional[str] = None,
     ) -> AsyncGenerator[str, None]:
         """Stream SSE events from Agent BE.
 
@@ -49,6 +50,7 @@ class AgentProxyService:
         url = f"{self._base_url}/api/chat/stream"
         headers = {
             "X-API-Key": self._api_key,
+            "X-LLM-API-Key": llm_api_key or "",
             "Content-Type": "application/json",
             "Accept": "text/event-stream",
         }
@@ -81,6 +83,46 @@ class AgentProxyService:
             logger.error("Agent BE timed out: %s", exc)
             yield _sse_error("Agent service timed out. Please try again.")
 
+    async def validate_key(self, llm_api_key: str, timeout: int = 20) -> Dict[str, Any]:
+        """Validate an LLM API key via Agent BE's /api/validate-key endpoint."""
+        url = f"{self._base_url}/api/validate-key"
+        headers = {
+            "X-API-Key": self._api_key,
+            "X-LLM-API-Key": llm_api_key,
+            "Content-Type": "application/json",
+        }
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(connect=5.0, read=float(timeout), write=5.0, pool=5.0)) as client:
+                resp = await client.post(url, headers=headers)
+                resp.raise_for_status()
+                return resp.json()
+        except httpx.ConnectError as exc:
+            logger.error("Cannot connect to Agent BE for key validation: %s", exc)
+            return {"valid": False, "reason": "agent_unreachable"}
+        except httpx.ReadTimeout:
+            logger.warning("Key validation timed out (timeout=%ds)", timeout)
+            raise  # Let caller retry
+        except httpx.HTTPStatusError as exc:
+            status = exc.response.status_code
+            logger.error("Key validation returned %s", status)
+            if status == 401:
+                return {"valid": False, "reason": "agent_auth_failed"}
+            return {"valid": False, "reason": "error", "detail": f"Agent BE returned HTTP {status}"}
+        except Exception as exc:
+            logger.error("Key validation failed: %s", exc)
+            return {"valid": False, "reason": "error", "detail": str(exc)[:200]}
+
 
 def _sse_error(message: str) -> str:
     return f"data: {json.dumps({'type': 'error', 'content': message})}\n\n"
+
+
+# Module-level singleton for reuse across requests
+_proxy: Optional[AgentProxyService] = None
+
+
+def get_proxy() -> AgentProxyService:
+    global _proxy
+    if _proxy is None:
+        _proxy = AgentProxyService()
+    return _proxy
