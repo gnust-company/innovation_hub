@@ -30,6 +30,7 @@ class UserModel(BaseModel):
     role: Mapped[str] = mapped_column(String(20), default=UserRole.MEMBER.value)
     team: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     avatar_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    llm_api_key: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     
     # Relationships

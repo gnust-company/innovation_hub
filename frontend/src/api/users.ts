@@ -53,4 +53,21 @@ export const usersApi = {
     const response = await apiClient.post<{ new_password: string }>(`/users/${userId}/reset-password`);
     return response.data;
   },
+
+  // LLM API Key
+  saveLlmApiKey: async (key: string): Promise<{ saved: boolean; valid?: boolean; reason?: string; detail?: string }> => {
+    const { data } = await apiClient.put('/users/me/llm-api-key', { llm_api_key: key });
+    return data;
+  },
+  deleteLlmApiKey: async (): Promise<void> => {
+    await apiClient.delete('/users/me/llm-api-key');
+  },
+  checkLlmApiKey: async (): Promise<{ has_key: boolean }> => {
+    const { data } = await apiClient.get('/users/me/llm-api-key');
+    return data;
+  },
+  getKeyHelpUrl: async (): Promise<{ url: string }> => {
+    const { data } = await apiClient.get('/chat/key-help-url');
+    return data;
+  },
 };

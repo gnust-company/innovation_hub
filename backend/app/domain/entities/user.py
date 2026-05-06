@@ -19,6 +19,7 @@ class User:
     role: UserRole = field(default=UserRole.MEMBER)
     team: Optional[str] = None
     avatar_url: Optional[str] = None
+    llm_api_key: Optional[str] = None
     is_active: bool = field(default=True)
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
@@ -54,6 +55,11 @@ class User:
     def is_admin(self) -> bool:
         """Check if user has admin role."""
         return self.role == UserRole.ADMIN
+
+    @property
+    def llm_api_key_set(self) -> bool:
+        """Whether the user has configured an LLM API key."""
+        return bool(self.llm_api_key)
     
     def set_role(self, role: UserRole) -> None:
         """Set user role."""

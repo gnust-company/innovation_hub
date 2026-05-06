@@ -415,7 +415,25 @@
     "password_changed": "Password changed!",
     "password_error": "Failed to change password. Check your current password.",
     "language": "Language",
-    "language_desc": "Choose your preferred language"
+    "language_desc": "Choose your preferred language",
+    "api_key_tab": "API Key",
+    "api_key_title": "AI Chat API Key",
+    "api_key_desc": "API Key used to call the AI model. Each user needs to configure their own key.",
+    "api_key_guide": "How to get a key",
+    "api_key_saved": "API Key saved",
+    "api_key_save_fail": "Failed to save",
+    "api_key_deleted": "API Key deleted",
+    "api_key_delete_fail": "Failed to delete",
+    "api_key_valid": "API Key is valid. Saved successfully!",
+    "api_key_invalid": "API Key is invalid. Please check and try again.",
+    "api_key_agent_unreachable": "Cannot connect to AI Agent. Key saved but not verified.",
+    "api_key_llm_unreachable": "Cannot connect to LLM service. Key saved but not verified.",
+    "api_key_validate_error": "Could not verify key. Key has been saved.",
+    "api_key_timeout": "Key verification timed out. Key saved — will verify when you chat.",
+    "api_key_validating": "Validating...",
+    "api_key_placeholder_saved": "•••••••••••••••• (saved, enter new to replace)",
+    "api_key_save": "Save Key",
+    "api_key_delete": "Delete"
   },
   "admin": {
     "users_title": "User Management",
@@ -946,6 +964,17 @@
     "session_default_title": "New Chat",
     "suggest_innovation": "What is Innovation Hub about?",
     "suggest_problem": "How do I submit a problem?",
-    "suggest_idea": "How does the idea voting system work?"
+    "suggest_idea": "How does the idea voting system work?",
+    "no_key_title": "API Key Required",
+    "no_key_heading": "API Key Not Configured",
+    "no_key_desc": "You need to add an API Key to use AI Chat.",
+    "no_key_setup": "Set Up Now",
+    "no_key_guide": "How to get an API Key",
+    "error_no_api_key": "API Key not configured. Please add it in Settings.",
+    "error_auth_failed": "API Key is invalid or expired. Please check it in Settings.",
+    "error_rate_limited": "API rate limit exceeded. Please try again later.",
+    "error_timeout": "Request timed out. Please try again.",
+    "error_connection": "Cannot connect to AI service. Please try again later.",
+    "error_stream": "An error occurred. Please try again."
   }
 }

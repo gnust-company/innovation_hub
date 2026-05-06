@@ -1,9 +1,12 @@
 """User endpoints."""
+import logging
 import secrets
 import string
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,6 +26,9 @@ from app.infrastructure.database.repositories.user_repository_impl import SQLUse
 from app.infrastructure.security.jwt import get_current_active_user, require_admin, UserResponseDTO as AuthUser
 from app.infrastructure.security.password import PasswordHasher
 from app.infrastructure.web.api import deps
+from app.application.services.agent_proxy_service import AgentProxyService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -211,3 +217,81 @@ async def admin_reset_password(
 
     await user_repo.update(user)
     return {"new_password": new_password}
+
+
+# ── LLM API Key management ──────────────────────────────────────────────────
+
+class LlmApiKeyInput(BaseModel):
+    llm_api_key: str
+
+
+@router.put("/me/llm-api-key")
+async def save_llm_api_key(
+    data: LlmApiKeyInput,
+    current_user: AuthUser = Depends(get_current_active_user),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    agent_proxy: AgentProxyService = Depends(deps.get_agent_proxy_service),
+):
+    """Save and validate the current user's LLM API key."""
+    user = await user_repo.get_by_id(current_user.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.llm_api_key = data.llm_api_key
+    user.updated_at = datetime.utcnow()
+    await user_repo.update(user)
+
+    # Validate with 30s timeout
+    try:
+        result = await agent_proxy.validate_key(data.llm_api_key, timeout=30)
+    except Exception as e:
+        logger.warning("Key validation timed out or failed: %s", e)
+        return {"saved": True, "valid": False, "reason": "timeout"}
+
+    if result.get("valid"):
+        return {"saved": True, "valid": True}
+
+    return {"saved": True, "valid": False, "reason": result.get("reason", "error"), "detail": result.get("detail")}
+
+
+@router.delete("/me/llm-api-key", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_llm_api_key(
+    current_user: AuthUser = Depends(get_current_active_user),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+):
+    """Delete the current user's LLM API key."""
+    user = await user_repo.get_by_id(current_user.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.llm_api_key = None
+    user.updated_at = datetime.utcnow()
+    await user_repo.update(user)
+
+
+@router.get("/me/llm-api-key")
+async def check_llm_api_key(
+    current_user: AuthUser = Depends(get_current_active_user),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+):
+    """Check if the current user has an LLM API key configured."""
+    user = await user_repo.get_by_id(current_user.id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"has_key": bool(user.llm_api_key)}
+
+
+@router.post("/me/validate-llm-key")
+async def validate_llm_api_key(
+    current_user: AuthUser = Depends(get_current_active_user),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
+    agent_proxy: AgentProxyService = Depends(deps.get_agent_proxy_service),
+):
+    """Validate the current user's LLM API key via Agent BE."""
+    user = await user_repo.get_by_id(current_user.id)
+    if not user or not user.llm_api_key:
+        return {"valid": False, "error": "No API key configured"}
+    try:
+        result = await agent_proxy.validate_key(user.llm_api_key)
+        return result
+    except Exception as e:
+        logger.error("Key validation failed: %s", e)
+        return {"valid": False, "error": str(e)}

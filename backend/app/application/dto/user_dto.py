@@ -65,6 +65,7 @@ class UserResponseDTO(BaseModel):
     role: UserRole
     team: Optional[str] = None
     avatar_url: Optional[str] = None
+    llm_api_key_set: bool = False
     is_active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None

@@ -47,6 +47,7 @@ class Settings(BaseSettings):
     agent_base_url: str = "http://agent-be:8000"
     agent_api_key: str = ""
     agent_timeout: float = 60.0
+    agent_key_help_url: str = "https://wiki.internal/how-to-get-api-key"
 
     # CORS
     cors_origins: List[str] = ["*"]

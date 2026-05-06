@@ -409,7 +409,25 @@
     "password_changed": "Đã đổi mật khẩu!",
     "password_error": "Không thể đổi mật khẩu. Kiểm tra lại mật khẩu hiện tại.",
     "language": "Ngôn ngữ",
-    "language_desc": "Chọn ngôn ngữ hiển thị"
+    "language_desc": "Chọn ngôn ngữ hiển thị",
+    "api_key_tab": "API Key",
+    "api_key_title": "AI Chat API Key",
+    "api_key_desc": "API Key dùng để gọi mô hình AI. Mỗi người dùng cần tự cấu hình key riêng.",
+    "api_key_guide": "Hướng dẫn lấy key",
+    "api_key_saved": "Đã lưu API Key",
+    "api_key_save_fail": "Lưu thất bại",
+    "api_key_deleted": "Đã xóa API Key",
+    "api_key_delete_fail": "Xóa thất bại",
+    "api_key_valid": "API Key hợp lệ. Đã lưu thành công!",
+    "api_key_invalid": "API Key không hợp lệ. Vui lòng kiểm tra lại.",
+    "api_key_agent_unreachable": "Không kết nối được đến AI Agent. Key đã được lưu nhưng chưa xác minh được.",
+    "api_key_llm_unreachable": "Không kết nối được đến dịch vụ LLM. Key đã được lưu nhưng chưa xác minh được.",
+    "api_key_validate_error": "Không thể xác minh key. Key đã được lưu.",
+    "api_key_timeout": "Xác minh key quá thời gian. Key đã được lưu, sẽ kiểm tra lại khi bạn chat.",
+    "api_key_validating": "Đang kiểm tra...",
+    "api_key_placeholder_saved": "•••••••••••••••• (đã lưu, nhập mới để thay thế)",
+    "api_key_save": "Lưu Key",
+    "api_key_delete": "Xóa"
   },
   "admin": {
     "users_title": "Quản lý Người dùng",
@@ -940,6 +958,17 @@
     "session_default_title": "Cuộc trò chuyện mới",
     "suggest_innovation": "Innovation Hub là gì?",
     "suggest_problem": "Làm sao để submit một vấn đề?",
-    "suggest_idea": "Hệ thống bình chọn ý tưởng hoạt động như thế nào?"
+    "suggest_idea": "Hệ thống bình chọn ý tưởng hoạt động như thế nào?",
+    "no_key_title": "Yêu cầu cập nhật API Key",
+    "no_key_heading": "Chưa cấu hình API Key",
+    "no_key_desc": "Bạn cần thêm API Key để sử dụng AI Chat.",
+    "no_key_setup": "Cài đặt ngay",
+    "no_key_guide": "Hướng dẫn lấy API Key",
+    "error_no_api_key": "Chưa cấu hình API Key. Vui lòng vào Cài đặt để thêm.",
+    "error_auth_failed": "API Key không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại trong Cài đặt.",
+    "error_rate_limited": "Đã vượt giới hạn gọi API. Vui lòng thử lại sau.",
+    "error_timeout": "Yêu cầu quá thời gian. Vui lòng thử lại.",
+    "error_connection": "Không kết nối được đến dịch vụ AI. Vui lòng thử lại sau.",
+    "error_stream": "Đã xảy ra lỗi. Vui lòng thử lại."
   }
 }

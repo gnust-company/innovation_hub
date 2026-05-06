@@ -1,13 +1,14 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, KeyRound, LogOut, Camera } from 'lucide-react';
+import { User, KeyRound, LogOut, Camera, Eye, EyeOff, CheckCircle, XCircle, ExternalLink, Bot } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/stores/authStore';
 import { useUIStore } from '@/stores/uiStore';
 import { authApi } from '@/api/auth';
 import { uploadsApi } from '@/api/uploads';
+import { usersApi } from '@/api/users';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
@@ -38,9 +39,23 @@ export const UserSettingsPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user, updateProfile, logout } = useAuthStore();
   const { showToast } = useUIStore();
-  const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'apikey'>('profile');
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // API Key state
+  const [apiKey, setApiKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
+  const [hasKey, setHasKey] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [validationResult, setValidationResult] = useState<{ type: 'valid' | 'warning'; message: string } | null>(null);
+  const [helpUrl, setHelpUrl] = useState('');
+  const [saveElapsed, setSaveElapsed] = useState(0);
+
+  useEffect(() => {
+    usersApi.checkLlmApiKey().then(r => setHasKey(r.has_key)).catch(() => {});
+    usersApi.getKeyHelpUrl().then(r => setHelpUrl(r.url)).catch(() => {});
+  }, []);
 
   const {
     register: registerProfile,
@@ -114,6 +129,7 @@ export const UserSettingsPage: React.FC = () => {
   const tabs = [
     { id: 'profile' as const, label: 'settings.profile', icon: User },
     { id: 'password' as const, label: 'settings.password', icon: KeyRound },
+    { id: 'apikey' as const, label: 'settings.api_key_tab', icon: Bot },
   ];
 
   return (
@@ -274,6 +290,116 @@ export const UserSettingsPage: React.FC = () => {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* API Key Tab */}
+      {activeTab === 'apikey' && (
+        <Card>
+          <CardHeader>
+            <h3 className="text-feature-title font-semibold text-gray-900">{t('settings.api_key_title')}</h3>
+          </CardHeader>
+          <CardContent className="p-6 pt-4 space-y-4">
+            <p className="text-sm text-gray-500">
+              {t('settings.api_key_desc')}
+              {helpUrl && (
+                <a href={helpUrl} target="_blank" rel="noopener noreferrer" className="ml-1 text-primary-600 hover:underline inline-flex items-center gap-1">
+                  {t('settings.api_key_guide')} <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </p>
+
+            <div className="relative">
+              <input
+                type={showKey ? 'text' : 'password'}
+                value={apiKey}
+                onChange={(e) => { setApiKey(e.target.value); setValidationResult(null); }}
+                placeholder={hasKey ? t('settings.api_key_placeholder_saved') : 'sk-...'}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-base text-gray-900 focus:border-primary-500 focus:ring-primary-500 focus:outline-none shadow-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowKey(!showKey)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+
+            {validationResult && (
+              <div className={classNames(
+                'flex items-center gap-2 text-sm',
+                validationResult.type === 'valid' ? 'text-green-600' : 'text-amber-600'
+              )}>
+                {validationResult.type === 'valid'
+                  ? <CheckCircle className="h-4 w-4" />
+                  : <XCircle className="h-4 w-4" />
+                }
+                <span>{validationResult.message}</span>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <Button
+                onClick={async () => {
+                  if (!apiKey.trim()) return;
+                  setIsSaving(true);
+                  setValidationResult(null);
+                  setIsSaving(true);
+                  setSaveElapsed(0);
+                  const timer = setInterval(() => setSaveElapsed(s => s + 1), 1000);
+                  try {
+                    const result = await usersApi.saveLlmApiKey(apiKey.trim());
+                    setHasKey(true);
+                    if (result.valid) {
+                      setApiKey('');
+                      setValidationResult({ type: 'valid', message: t('settings.api_key_valid') });
+                      showToast({ type: 'success', message: t('settings.api_key_saved') });
+                    } else {
+                      const reasonMsgMap: Record<string, string> = {
+                        invalid_key: t('settings.api_key_invalid'),
+                        agent_unreachable: t('settings.api_key_agent_unreachable'),
+                        llm_unreachable: t('settings.api_key_llm_unreachable'),
+                        timeout: t('settings.api_key_timeout'),
+                        error: t('settings.api_key_validate_error'),
+                      };
+                      const msg = reasonMsgMap[result.reason || 'error'] || t('settings.api_key_invalid');
+                      setApiKey('');
+                      setValidationResult({ type: 'warning', message: msg });
+                      showToast({ type: 'warning', message: msg });
+                    }
+                  } catch {
+                    showToast({ type: 'error', message: t('settings.api_key_save_fail') });
+                  } finally {
+                    clearInterval(timer);
+                    setIsSaving(false);
+                    setSaveElapsed(0);
+                  }
+                }}
+                disabled={!apiKey.trim() || isSaving}
+                isLoading={isSaving}
+              >
+                {isSaving ? `${t('settings.api_key_validating')} ${saveElapsed}s` : t('settings.api_key_save')}
+              </Button>
+              {hasKey && (
+                <Button
+                  variant="danger"
+                  onClick={async () => {
+                    try {
+                      await usersApi.deleteLlmApiKey();
+                      setHasKey(false);
+                      setValidationResult(null);
+                      showToast({ type: 'success', message: t('settings.api_key_deleted') });
+                    } catch {
+                      showToast({ type: 'error', message: t('settings.api_key_delete_fail') });
+                    }
+                  }}
+                >
+                  {t('settings.api_key_delete')}
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
