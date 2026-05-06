@@ -6,7 +6,7 @@ from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -222,7 +222,7 @@ async def admin_reset_password(
 # ── LLM API Key management ──────────────────────────────────────────────────
 
 class LlmApiKeyInput(BaseModel):
-    llm_api_key: str
+    llm_api_key: str = Field(min_length=8, max_length=255)
 
 
 @router.put("/me/llm-api-key")

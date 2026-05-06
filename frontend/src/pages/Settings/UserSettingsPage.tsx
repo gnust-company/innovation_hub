@@ -346,7 +346,6 @@ export const UserSettingsPage: React.FC = () => {
                   if (!apiKey.trim()) return;
                   setIsSaving(true);
                   setValidationResult(null);
-                  setIsSaving(true);
                   setSaveElapsed(0);
                   const timer = setInterval(() => setSaveElapsed(s => s + 1), 1000);
                   try {

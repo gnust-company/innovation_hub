@@ -1,6 +1,7 @@
 """Chat endpoints."""
 import json
 import logging
+from enum import Enum
 from typing import AsyncGenerator, List
 from uuid import UUID
 
@@ -29,6 +30,10 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 service = ChatSessionService()
+
+
+class ChatErrorCode(str, Enum):
+    NO_API_KEY = "NO_API_KEY"
 
 
 @router.post("/sessions", response_model=SessionResponseDTO, status_code=status.HTTP_201_CREATED)
@@ -99,7 +104,7 @@ async def send_message(
     user = await user_repo.get_by_id(current_user.id)
     if not user or not user.llm_api_key:
         return StreamingResponse(
-            iter([f"data: {json.dumps({'type': 'error', 'content': 'NO_API_KEY'})}\n\n"]),
+            iter([f"data: {json.dumps({'type': 'error', 'content': ChatErrorCode.NO_API_KEY})}\n\n"]),
             media_type="text/event-stream",
             headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
         )
