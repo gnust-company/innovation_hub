@@ -13,7 +13,7 @@ export interface ChatMessage {
   created_at: string;
 }
 
-export type StreamEventType = 'token' | 'tool_call' | 'tool_result' | 'sources' | 'done' | 'error';
+export type StreamEventType = 'token' | 'tool_call' | 'tool_result' | 'sources' | 'done' | 'error' | 'limit_reached';
 
 export interface StreamEvent {
   type: StreamEventType;

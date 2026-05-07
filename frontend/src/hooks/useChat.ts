@@ -156,6 +156,13 @@ export function useChat() {
               }
               break;
             }
+            case 'limit_reached':
+              fullContent = t('chat.limit_reached');
+              answerContent = t('chat.limit_reached');
+              if (active) {
+                useChatStore.getState().setStreamingContent(t('chat.limit_reached'));
+              }
+              break;
             case 'error':
               if (active) {
                 const errorKey = mapSSEError(event.content || '');

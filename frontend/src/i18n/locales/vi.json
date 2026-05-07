@@ -969,6 +969,7 @@
     "error_rate_limited": "Đã vượt giới hạn gọi API. Vui lòng thử lại sau.",
     "error_timeout": "Yêu cầu quá thời gian. Vui lòng thử lại.",
     "error_connection": "Không kết nối được đến dịch vụ AI. Vui lòng thử lại sau.",
-    "error_stream": "Đã xảy ra lỗi. Vui lòng thử lại."
+    "error_stream": "Đã xảy ra lỗi. Vui lòng thử lại.",
+    "limit_reached": "Hmm, yêu cầu của bạn phức tạp hơn tôi tưởng 😔. Hiện tại tôi chưa thể giải quyết được, bạn thử lại sau nhé!"
   }
 }

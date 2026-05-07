@@ -975,6 +975,7 @@
     "error_rate_limited": "API rate limit exceeded. Please try again later.",
     "error_timeout": "Request timed out. Please try again.",
     "error_connection": "Cannot connect to AI service. Please try again later.",
-    "error_stream": "An error occurred. Please try again."
+    "error_stream": "An error occurred. Please try again.",
+    "limit_reached": "Hmm, your request is more complex than I expected 😔. I can't process it right now, please try again later!"
   }
 }
