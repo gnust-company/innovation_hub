@@ -84,7 +84,11 @@ Tổ chức cuộc thi
 </tr>
 <tr>
 <td>🔔 <strong>Notifications</strong></td>
-<td>Real-time polling · 9 loại notification · Click-to-navigate · Mark as read</td>
+<td>Real-time polling · 15+ loại notification · Click-to-navigate · Mark as read</td>
+</tr>
+<tr>
+<td>🤖 <strong>ChatBot</strong></td>
+<td>Multi-session AI chat · Lịch sử conversations · Wiki-grounded answers · SSE streaming</td>
 </tr>
 <tr>
 <td>🌐 <strong>Đa ngôn ngữ</strong></td>
@@ -188,6 +192,8 @@ innovation_hub/
 │   │   │   ├── database/      # Models, migrations (Alembic)
 │   │   │   └── web/api/       # FastAPI endpoints (v1)
 │   │   └── main.py
+│   ├── scripts/               # Admin utilities (create_admin, seed data)
+│   ├── tests/                 # pytest configuration
 │   └── Dockerfile
 │
 ├── frontend/                   # React TypeScript
@@ -197,7 +203,8 @@ innovation_hub/
 │   │   ├── pages/             # Page components
 │   │   ├── stores/            # Zustand state management
 │   │   ├── i18n/              # EN/VI translations
-│   │   └── types/             # TypeScript types
+│   │   ├── types/             # TypeScript types
+│   │   └── utils/             # Helpers, TipTap utilities
 │   └── Dockerfile
 │
 ├── docker-compose.yml          # Full stack orchestration

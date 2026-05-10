@@ -62,7 +62,8 @@ Clean Architecture — business logic không phụ thuộc framework hay databas
 | **Event Teams** | create, join/leave, approve/reject, manage members | Team management |
 | **Event Ideas** | submit (manual/from Room), structured 7-field form | Ý tưởng thi đấu |
 | **Scoring** | 8 criteria (4P + 4S), Likert 5-point, max 100 | Chấm điểm circular |
-| **Notifications** | polling, 9 types, mark read, click-to-navigate | Real-time updates |
+| **Notifications** | polling, 15+ types, mark read, click-to-navigate | Real-time updates |
+| **Chat** | sessions, messages, SSE streaming proxy to Agent BE | AI ChatBot |
 | **Uploads** | images, avatars → MinIO | File management |
 
 > API Docs: `http://localhost:3000/api/v1/docs` (qua Nginx proxy)

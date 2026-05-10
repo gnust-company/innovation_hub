@@ -44,11 +44,13 @@ This document provides essential information for AI coding agents working on the
 - **HTTP Client**: Axios 1.6.7 with request/response interceptors
 - **Forms**: react-hook-form 7.51 + Zod 3.22 for validation
 - **Rich Text**: TipTap 3.20 ecosystem (starter-kit, image, placeholder, etc.)
+- **Markdown Rendering**: react-markdown 10.1 + remark-gfm 4.0
 - **Charts**: Recharts 2.12
 - **Animations**: Framer Motion 11.0
 - **i18n**: react-i18next 16.6 + i18next-browser-languagedetector
 - **Icons**: lucide-react 0.344
 - **UI Primitives**: Radix UI (dialog, dropdown-menu, slot)
+- **Typography**: @tailwindcss/typography 0.5.19
 - **Date Utilities**: date-fns 3.3
 
 ### Additional Backend Libraries
@@ -57,6 +59,7 @@ This document provides essential information for AI coding agents working on the
 - **JWT**: python-jose[cryptography] 3.3
 - **Logging**: structlog 23.2
 - **MinIO Client**: minio 7.2
+- **HTTP Client (internal)**: httpx 0.25 (Agent proxy)
 
 ## Project Structure
 
@@ -109,9 +112,9 @@ innovation_hub/
 │   │   │   ├── Login/         # Login page
 │   │   │   ├── Register/      # Registration page
 │   │   │   └── Help/          # Help documentation page
-│   │   ├── stores/            # Zustand stores (auth, problems, notifications, UI)
+│   │   ├── stores/            # Zustand stores (auth, chat, problems, notifications, UI)
 │   │   ├── i18n/              # Internationalization (EN/VI)
-│   │   ├── types/             # TypeScript type definitions (single comprehensive file)
+│   │   ├── types/             # TypeScript type definitions (index.ts, chat.ts)
 │   │   └── utils/             # Constants, helpers, TipTap utilities
 │   ├── package.json
 │   ├── tsconfig.json
@@ -244,6 +247,7 @@ See `API_CONTRACT.md` for the complete API specification (Single Source of Truth
 ### Key Conventions
 
 - **Base URL**: `/api/v1` (api_router at `/api` + v1 prefix `/v1`)
+- **Chat Base URL**: `/chat` (standalone router for chat sessions/messages)
 - **Authentication**: JWT Bearer tokens in `Authorization` header
 - **Response Format**:
   - Single item: Direct object
