@@ -447,12 +447,12 @@ export const ProblemDetailPage: React.FC = () => {
                   <div
                     key={comment.id}
                     className={`flex gap-3 p-4 rounded-lg ${
-                      isOwnComment ? 'flex-row-reverse bg-primary-50' : 'bg-secondary'
+                      isOwnComment ? 'bg-primary-50' : 'bg-secondary'
                     }`}
                   >
                     <Avatar src={comment.author?.avatar_url} name={commentAuthorName} size="md" />
-                    <div className={`flex-1 ${isOwnComment ? 'text-right' : ''}`}>
-                      <div className={`flex items-center gap-2 mb-1 ${isOwnComment ? 'flex-row-reverse' : ''}`}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-foreground">
                           {commentAuthorName}
                         </span>
@@ -460,7 +460,9 @@ export const ProblemDetailPage: React.FC = () => {
                           {timeAgo(comment.created_at)}
                         </span>
                       </div>
-                      <p className="text-foreground/70">{comment.content}</p>
+                      <div className="whitespace-pre-wrap break-words text-foreground/70">
+                        {comment.content}
+                      </div>
                     </div>
                   </div>
                 );
