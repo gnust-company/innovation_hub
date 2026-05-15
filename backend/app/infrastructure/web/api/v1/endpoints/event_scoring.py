@@ -11,6 +11,9 @@ from app.application.dto.event_scoring_dto import (
     ScoreResponseDTO,
     ScoreListResponseDTO,
 )
+from app.application.services.notification_delivery_service import (
+    NotificationDeliveryService,
+)
 from app.application.use_cases.event_scoring.create_criteria import CreateCriteriaUseCase
 from app.application.use_cases.event_scoring.list_criteria import ListCriteriaUseCase
 from app.application.use_cases.event_scoring.submit_score import SubmitScoreUseCase
@@ -29,12 +32,14 @@ from app.infrastructure.database.repositories.event_team_repository_impl import 
 from app.infrastructure.database.repositories.event_scoring_criteria_repository_impl import SQLEventScoringCriteriaRepository
 from app.infrastructure.database.repositories.event_score_repository_impl import SQLEventScoreRepository
 from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
+from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+EVENT_TITLE_SEPARATOR = " · Event: "
 
 
 def _handle_exceptions(exc):
@@ -88,6 +93,7 @@ async def submit_score(
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     criteria_repo: SQLEventScoringCriteriaRepository = Depends(deps.get_event_scoring_criteria_repo),
     score_repo: SQLEventScoreRepository = Depends(deps.get_event_score_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Submit scores for an idea. Team Lead only (can_score = true)."""
@@ -116,7 +122,15 @@ async def submit_score(
             if idea_team and idea_team.leader_id != current_user.id:
                 recipients.add(idea_team.leader_id)
 
-        action_detail = f"{score.total_score}/{max_total} từ {scorer_team.name}" if scorer_team else f"{score.total_score}/{max_total}"
+        target_title = idea.title if idea else ""
+        if idea and event:
+            target_title = f"{idea.title}{EVENT_TITLE_SEPARATOR}{event.title}"
+
+        score_detail = (
+            f"{score.total_score}/{max_total} từ {scorer_team.name}"
+            if scorer_team
+            else f"{score.total_score}/{max_total}"
+        )
 
         notifications = [
             Notification(
@@ -125,14 +139,16 @@ async def submit_score(
                 type="event_scored",
                 target_id=idea_id,
                 target_type="event_idea",
-                target_title=event.title if event else "",
-                action_detail=action_detail,
+                target_title=target_title,
+                action_detail=score_detail,
                 reference_id=event_id,
             )
             for uid in recipients
         ]
         if notifications:
-            await notification_repo.create_bulk(notifications)
+            await NotificationDeliveryService(notification_repo, user_repo).deliver(
+                notifications
+            )
     except Exception:
         logger.exception("Failed to send event_scored notification")
 
@@ -160,6 +176,7 @@ async def update_score(
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
     criteria_repo: SQLEventScoringCriteriaRepository = Depends(deps.get_event_scoring_criteria_repo),
     score_repo: SQLEventScoreRepository = Depends(deps.get_event_score_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Update scores for an idea. Same permission as submit."""
@@ -187,7 +204,15 @@ async def update_score(
             if idea_team and idea_team.leader_id != current_user.id:
                 recipients.add(idea_team.leader_id)
 
-        action_detail = f"{score.total_score}/{max_total} từ {scorer_team.name}" if scorer_team else f"{score.total_score}/{max_total}"
+        target_title = idea.title if idea else ""
+        if idea and event:
+            target_title = f"{idea.title}{EVENT_TITLE_SEPARATOR}{event.title}"
+
+        score_detail = (
+            f"{score.total_score}/{max_total} từ {scorer_team.name}"
+            if scorer_team
+            else f"{score.total_score}/{max_total}"
+        )
 
         notifications = [
             Notification(
@@ -196,14 +221,16 @@ async def update_score(
                 type="event_scored",
                 target_id=idea_id,
                 target_type="event_idea",
-                target_title=event.title if event else "",
-                action_detail=action_detail,
+                target_title=target_title,
+                action_detail=score_detail,
                 reference_id=event_id,
             )
             for uid in recipients
         ]
         if notifications:
-            await notification_repo.create_bulk(notifications)
+            await NotificationDeliveryService(notification_repo, user_repo).deliver(
+                notifications
+            )
     except Exception:
         logger.exception("Failed to send event_scored notification")
 

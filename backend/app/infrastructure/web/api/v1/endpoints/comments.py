@@ -15,6 +15,7 @@ from app.application.use_cases.comment.delete_comment import DeleteCommentUseCas
 from app.infrastructure.database.repositories.comment_repository_impl import SQLCommentRepository
 from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
 from app.infrastructure.database.repositories.event_idea_repository_impl import SQLEventIdeaRepository
+from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
 from app.infrastructure.database.repositories.notification_repository_impl import (
     SQLNotificationRepository,
 )
@@ -26,6 +27,8 @@ from app.infrastructure.security.jwt import get_current_active_user, UserRespons
 from app.infrastructure.web.api import deps
 
 router = APIRouter()
+
+EVENT_TITLE_SEPARATOR = " · Event: "
 
 
 async def enrich_comment(comment, user_repo: SQLUserRepository) -> CommentResponseDTO:
@@ -83,6 +86,7 @@ async def create_comment(
     problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
     event_idea_repo: SQLEventIdeaRepository = Depends(deps.get_event_idea_repo),
+    event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
@@ -117,11 +121,18 @@ async def create_comment(
         event_idea = await event_idea_repo.get_by_id(data.target_id)
         if event_idea:
             target_title = event_idea.title
+            event = await event_repo.get_by_id(event_idea.event_id)
+            if event:
+                target_title = (
+                    f"{event_idea.title}{EVENT_TITLE_SEPARATOR}{event.title}"
+                )
             owner_id = event_idea.author_id
 
     # Create notification with truncated comment content
     if owner_id:
-        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        svc = NotificationService(
+            notification_repo, user_repo, comment_repo, reaction_repo, vote_repo
+        )
         action_detail = svc.truncate_comment(data.content)
         await svc.notify(
             actor_id=current_user.id,

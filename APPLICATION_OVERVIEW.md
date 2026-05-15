@@ -223,6 +223,8 @@ Tổng tối đa = 8 × 12.5 = 100 điểm
 | Idea mới submit | `event_idea_submitted` | Admin |
 | Được chấm điểm | `event_scored` | Team Lead của idea |
 
+Thông báo được tạo trong nền tảng và có thể gửi thêm email nội bộ nếu cấu hình mail-sender được bật. Email chỉ áp dụng cho các thông báo quan trọng (`comment_added`, `event_scored`, `event_join_request`, `team_disbanded`), còn nộp ý tưởng vào Event (`event_idea_submitted`), reaction, vote và các thay đổi ít khẩn cấp khác chỉ tạo in-app notification để tránh spam. Email được gửi nền sau khi in-app notification persist thành công để không chặn request nghiệp vụ. Email là best-effort, subject có prefix `[NO_REPLY][Innovation Hub]`, nội dung ngắn gọn có icon, in nghiêng tên người nhận trong lời chào, in đậm title của object chính, nêu rõ object/context (Problem, Idea Lab, Event Idea, Event/Team) và luôn có link `nhấn vào đây` trỏ về nội dung liên quan trong Innovation Hub. Riêng comment trên Event Idea phải hiển thị rõ dạng `ý tưởng "{idea_title}" trong Event "{event_title}"`.
+
 #### Quyền riêng tư & Độc lập:
 
 ```

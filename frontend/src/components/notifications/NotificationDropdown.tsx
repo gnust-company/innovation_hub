@@ -7,6 +7,16 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Popover } from '@/components/ui/Popover';
 import type { Notification } from '@/types';
 
+const EVENT_TITLE_SEPARATOR = ' · Event: ';
+
+function splitEventIdeaTitle(title: string): { title: string; eventTitle: string } {
+  if (!title.includes(EVENT_TITLE_SEPARATOR)) {
+    return { title, eventTitle: '' };
+  }
+  const [ideaTitle, eventTitle] = title.split(EVENT_TITLE_SEPARATOR, 2);
+  return { title: ideaTitle.trim(), eventTitle: eventTitle.trim() };
+}
+
 const NotificationItem: React.FC<{
   notification: Notification;
   onClick: (n: Notification) => void;
@@ -14,7 +24,16 @@ const NotificationItem: React.FC<{
   const { t } = useTranslation();
 
   const actorName = notification.actor?.full_name || notification.actor?.username || '?';
-  const messageKey = `notifications.${notification.type}`;
+  const eventIdeaTitle = splitEventIdeaTitle(notification.target_title);
+  const eventIdeaMessageKeys: Record<string, string> = {
+    comment_added: 'notifications.comment_added_event_idea',
+    event_scored: 'notifications.event_scored_event_idea',
+  };
+  const messageKey = notification.target_type === 'event_idea'
+    && eventIdeaTitle.eventTitle
+    && eventIdeaMessageKeys[notification.type]
+      ? eventIdeaMessageKeys[notification.type]
+      : `notifications.${notification.type}`;
 
   // Build translation params based on notification type
   const getTranslationParams = () => {
@@ -27,7 +46,8 @@ const NotificationItem: React.FC<{
           : t('notifications.target_event');
     const baseParams = {
       actor: actorName,
-      title: notification.target_title,
+      title: eventIdeaTitle.title,
+      event_title: eventIdeaTitle.eventTitle,
       target_type: targetTypeLabel,
     };
 
@@ -68,7 +88,7 @@ const NotificationItem: React.FC<{
       case 'event_join_rejected':
         return { ...baseParams, team_name: notification.action_detail || '' };
       case 'event_idea_submitted':
-        return baseParams;
+        return { ...baseParams, idea_title: notification.action_detail || '' };
       case 'event_scored':
         return { ...baseParams, score_detail: notification.action_detail || '' };
       case 'event_created':

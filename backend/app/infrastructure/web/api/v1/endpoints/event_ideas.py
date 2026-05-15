@@ -18,6 +18,9 @@ from app.application.use_cases.event_idea.list_ideas import ListEventIdeasUseCas
 from app.application.use_cases.event_idea.get_idea import GetEventIdeaUseCase
 from app.application.use_cases.event_idea.update_idea import UpdateEventIdeaUseCase
 from app.application.use_cases.event_idea.delete_idea import DeleteEventIdeaUseCase
+from app.application.services.notification_delivery_service import (
+    NotificationDeliveryService,
+)
 from app.core.exceptions import NotFoundException, ForbiddenException
 from app.domain.entities.notification import Notification
 from app.infrastructure.database.repositories.event_repository_impl import SQLEventRepository
@@ -68,7 +71,9 @@ async def _notify_admins_idea_submitted(
             if admin.id != actor_id
         ]
         if notifications:
-            await notification_repo.create_bulk(notifications)
+            await NotificationDeliveryService(notification_repo, user_repo).deliver(
+                notifications
+            )
     except Exception:
         logger.exception("Failed to send event_idea_submitted notification")
 

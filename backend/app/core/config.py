@@ -49,6 +49,13 @@ class Settings(BaseSettings):
     agent_timeout: float = 60.0
     agent_key_help_url: str = "https://wiki.internal/how-to-get-api-key"
 
+    # Internal mail sender
+    mail_sender_enabled: bool = False
+    mail_sender_url: str = "https://agent.sec.samsung.net/api/v1/run/mail-sender?stream=false"
+    mail_sender_api_key: str = ""
+    mail_sender_timeout_seconds: float = 10.0
+    app_public_url: str = ""
+
     # CORS
     cors_origins: List[str] = ["*"]
     cors_allow_credentials: bool = True

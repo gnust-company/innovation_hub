@@ -12,6 +12,7 @@ from app.infrastructure.database.repositories.problem_repository_impl import SQL
 from app.infrastructure.database.repositories.idea_repository_impl import SQLIdeaRepository
 from app.infrastructure.database.repositories.comment_repository_impl import SQLCommentRepository
 from app.infrastructure.database.repositories.notification_repository_impl import SQLNotificationRepository
+from app.infrastructure.database.repositories.user_repository_impl import SQLUserRepository
 from app.infrastructure.database.repositories.vote_repository_impl import SQLVoteRepository
 from app.infrastructure.security.jwt import get_current_active_user, UserResponseDTO
 from app.infrastructure.web.api import deps
@@ -37,6 +38,7 @@ async def toggle_problem_reaction(
     current_user: UserResponseDTO = Depends(get_current_active_user),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     problem_repo: SQLProblemRepository = Depends(deps.get_problem_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
     notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
@@ -74,7 +76,9 @@ async def toggle_problem_reaction(
     # Notify (for both new and changed reactions)
     problem = await problem_repo.get_by_id(problem_id)
     if problem:
-        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        svc = NotificationService(
+            notification_repo, user_repo, comment_repo, reaction_repo, vote_repo
+        )
         await svc.notify(
             actor_id=current_user.id,
             target_id=problem_id,
@@ -123,6 +127,7 @@ async def toggle_idea_reaction(
     current_user: UserResponseDTO = Depends(get_current_active_user),
     reaction_repo: SQLReactionRepository = Depends(deps.get_reaction_repo),
     idea_repo: SQLIdeaRepository = Depends(deps.get_idea_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     comment_repo: SQLCommentRepository = Depends(deps.get_comment_repo),
     notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
     vote_repo: SQLVoteRepository = Depends(deps.get_vote_repo),
@@ -152,7 +157,9 @@ async def toggle_idea_reaction(
     # Notify (for both new and changed reactions)
     idea = await idea_repo.get_by_id(idea_id)
     if idea:
-        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        svc = NotificationService(
+            notification_repo, user_repo, comment_repo, reaction_repo, vote_repo
+        )
         await svc.notify(
             actor_id=current_user.id,
             target_id=idea_id,

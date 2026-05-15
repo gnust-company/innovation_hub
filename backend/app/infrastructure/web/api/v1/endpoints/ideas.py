@@ -13,6 +13,9 @@ from app.application.dto.idea_dto import (
 )
 from app.application.dto.vote_dto import CreateVoteDTO, VoteResponseDTO
 from app.application.services.response_enrichment import enrich_idea, enrich_ideas
+from app.application.services.notification_delivery_service import (
+    NotificationDeliveryService,
+)
 from app.application.use_cases.idea.create_idea import CreateIdeaUseCase
 from app.application.use_cases.idea.update_idea import UpdateIdeaUseCase
 from app.application.use_cases.idea.vote_idea import VoteIdeaUseCase
@@ -122,7 +125,7 @@ async def create_idea(
             if problem and problem.author_id != current_user.id:
                 recipients.add(problem.author_id)
         if recipients:
-            await notification_repo.create_bulk([
+            await NotificationDeliveryService(notification_repo, user_repo).deliver([
                 Notification(
                     user_id=uid,
                     actor_id=current_user.id,
@@ -197,7 +200,9 @@ async def update_idea(
 
     # Notify on status change
     if data.status and old_status and str(data.status) != str(old_status):
-        svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+        svc = NotificationService(
+            notification_repo, user_repo, comment_repo, reaction_repo, vote_repo
+        )
         action_detail = f"{old_status.value} → {data.status.value}"
         await svc.notify(
             actor_id=current_user.id,
@@ -261,7 +266,9 @@ async def vote_idea(
     result = await use_case.execute(data, current_user.id)
 
     # Notify with stars detail
-    svc = NotificationService(notification_repo, comment_repo, reaction_repo, vote_repo)
+    svc = NotificationService(
+        notification_repo, user_repo, comment_repo, reaction_repo, vote_repo
+    )
     await svc.notify(
         actor_id=current_user.id,
         target_id=idea_id,

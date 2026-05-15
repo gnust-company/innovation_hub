@@ -829,7 +829,7 @@ Authorization: Bearer <access_token>
 | `event_join_approved` | Tên team | "Team Alpha" | - |
 | `event_join_rejected` | Tên team | "Team Alpha" | - |
 | `event_idea_submitted` | Tiêu đề idea | "Auto-approval cho nghỉ <1 ngày" | - |
-| `event_scored` | Tổng điểm + team chấm | "35.5/100 từ Team Beta" | - |
+| `event_scored` | Tổng điểm + team chấm | `target_title` là `"{idea_title} · Event: {event_title}"`; `action_detail` ví dụ: "35.5/100 từ Team Beta" | UI/email render thành `Ý tưởng "{idea_title}" trong Event "{event_title}"...` |
 | `event_created` | Tiêu đề event | "Agentic AI in Mobile" | - |
 | `event_closed` | Tiêu đề event | "Agentic AI in Mobile" | - |
 | `team_review_assigned` | Tên team được chấm | "Team Beta" | - |
@@ -902,6 +902,22 @@ Authorization: Bearer <access_token>
 | Chuyển quyền Lead | `team_lead_transferred` | event | event_id | - | Tất cả members trong đội |
 
 Recipients (cho comment/reaction/vote/status_changed): Owner của target + tất cả users đã tương tác (comment/reaction/vote), trừ actor.
+
+Với notification trên `event_idea` cần nêu rõ cả idea và Event. `target_title` được denormalize kèm tên Event để UI/email có thể hiển thị rõ: `"{idea_title} · Event: {event_title}"`. Nội dung hiển thị phải render thành dạng `ý tưởng "{idea_title}" trong Event "{event_title}"`, không show separator thô cho người dùng.
+
+### 10.5 Email notification side effect
+
+- Khi backend tạo in-app notification, hệ thống có thể gửi thêm email nội bộ qua mail-sender agent cho các loại quan trọng: `comment_added`, `event_scored`, `event_join_request`, `team_disbanded`.
+- Email được queue sau khi in-app notification đã persist thành công; phần gọi HTTP tới mail-sender chạy nền để không chặn request nghiệp vụ. Reaction, vote, đổi trạng thái, tạo event/idea/team lead, nộp ý tưởng vào Event (`event_idea_submitted`)... vẫn chỉ tạo in-app notification để tránh spam email.
+- Email chỉ gửi nếu `MAIL_SENDER_ENABLED=true`, `MAIL_SENDER_API_KEY` có giá trị, user nhận thông báo đang active, có email, và `APP_PUBLIC_URL` được cấu hình để tạo link tuyệt đối.
+- Email luôn là **best-effort**: lỗi endpoint mail, timeout, thiếu email hoặc thiếu config chỉ được log; API nghiệp vụ và in-app notification không bị fail.
+- Subject email có prefix `[NO_REPLY][Innovation Hub]`.
+- Nội dung email ngắn gọn, có icon theo loại thông báo, gồm lời chào người nhận, câu giới thiệu đây là thông báo từ nền tảng Innovation Hub, nội dung chính, và CTA in nghiêng. Tên người nhận trong lời chào được in nghiêng, title của object chính được in đậm. Nội dung chính phải nêu rõ object/context: Problem, ý tưởng trong Idea Lab, ý tưởng trong Event, Event hoặc Team. Escape toàn bộ dữ liệu động, không render raw HTML/comment. Link không hiển thị URL thô mà nằm sau text `nhấn vào đây`.
+- Route link trong email dùng cùng logic click-to-navigate:
+  - `problem`: `{APP_PUBLIC_URL}/problems/{target_id}`
+  - `idea`: `{APP_PUBLIC_URL}/ideas/{target_id}`
+  - `event_idea`: `{APP_PUBLIC_URL}/events/{reference_id}/ideas/{target_id}`
+  - `event`: `{APP_PUBLIC_URL}/events/{target_id}?tab={tab}`
 
 ---
 

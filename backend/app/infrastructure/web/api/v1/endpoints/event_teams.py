@@ -17,6 +17,9 @@ from app.application.dto.event_team_dto import (
     AssignmentEntryDTO,
     EventTeamAssignedDTO,
 )
+from app.application.services.notification_delivery_service import (
+    NotificationDeliveryService,
+)
 from app.application.use_cases.event_team.create_team import CreateEventTeamUseCase
 from app.application.use_cases.event_team.list_teams import ListEventTeamsUseCase
 from app.application.use_cases.event_team.join_team import JoinEventTeamUseCase
@@ -190,7 +193,7 @@ async def join_team(
         team = await team_repo.get_team_by_id(team_id)
         event = await event_repo.get_by_id(event_id)
         if team:
-            await notification_repo.create_bulk([
+            await NotificationDeliveryService(notification_repo, user_repo).deliver([
                 Notification(
                     user_id=team.leader_id,
                     actor_id=current_user.id,
@@ -235,7 +238,7 @@ async def update_member_status(
             team = await team_repo.get_team_by_id(team_id)
             event = await event_repo.get_by_id(event_id)
             ntype = "event_join_approved" if data.status == "active" else "event_join_rejected"
-            await notification_repo.create_bulk([
+            await NotificationDeliveryService(notification_repo, user_repo).deliver([
                 Notification(
                     user_id=user_id,
                     actor_id=current_user.id,
@@ -259,6 +262,7 @@ async def disband_team(
     current_user: UserResponseDTO = Depends(get_current_active_user),
     event_repo: SQLEventRepository = Depends(deps.get_event_repo),
     team_repo: SQLEventTeamRepository = Depends(deps.get_event_team_repo),
+    user_repo: SQLUserRepository = Depends(deps.get_user_repo),
     notification_repo: SQLNotificationRepository = Depends(deps.get_notification_repo),
 ):
     """Team Lead disbands team. Cascade deletes all members."""
@@ -294,7 +298,9 @@ async def disband_team(
                 )
                 for uid in member_ids
             ]
-            await notification_repo.create_bulk(notifications)
+            await NotificationDeliveryService(notification_repo, user_repo).deliver(
+                notifications
+            )
         except Exception:
             logger.exception("Failed to send team_disbanded notification")
 
@@ -359,7 +365,9 @@ async def transfer_lead(
                 )
                 for uid in member_ids
             ]
-            await notification_repo.create_bulk(notifications)
+            await NotificationDeliveryService(notification_repo, user_repo).deliver(
+                notifications
+            )
     except Exception:
         logger.exception("Failed to send team_lead_transferred notification")
 
@@ -394,7 +402,7 @@ async def assign_review(
             target_team = await team_repo.get_team_by_id(data.target_team_id)
             target_team_name = target_team.name if target_team else ""
             if team.leader_id != current_user.id:
-                await notification_repo.create_bulk([
+                await NotificationDeliveryService(notification_repo, user_repo).deliver([
                     Notification(
                         user_id=team.leader_id,
                         actor_id=current_user.id,

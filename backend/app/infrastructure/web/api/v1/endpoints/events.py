@@ -16,6 +16,9 @@ from app.application.dto.event_team_dto import (
     AssignmentEntryDTO,
     EventTeamAssignedDTO,
 )
+from app.application.services.notification_delivery_service import (
+    NotificationDeliveryService,
+)
 from app.application.services.response_enrichment import enrich_event, enrich_events
 from app.application.use_cases.event.create_event import CreateEventUseCase
 from app.application.use_cases.event.update_event import UpdateEventUseCase
@@ -63,7 +66,9 @@ async def create_event(
             if u.id != current_user.id and u.is_active
         ]
         if notifications:
-            await notification_repo.create_bulk(notifications)
+            await NotificationDeliveryService(notification_repo, user_repo).deliver(
+                notifications
+            )
     except Exception:
         logger.exception("Failed to send event_created notification")
 
@@ -156,7 +161,9 @@ async def close_event(
                 )
                 for uid in recipient_ids
             ]
-            await notification_repo.create_bulk(notifications)
+            await NotificationDeliveryService(notification_repo, user_repo).deliver(
+                notifications
+            )
     except Exception:
         logger.exception("Failed to send event_closed notification")
 

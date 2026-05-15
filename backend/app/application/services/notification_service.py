@@ -7,7 +7,11 @@ from app.domain.entities.notification import Notification
 from app.domain.repositories.notification_repository import NotificationRepository
 from app.domain.repositories.comment_repository import CommentRepository
 from app.domain.repositories.reaction_repository import ReactionRepository
+from app.domain.repositories.user_repository import UserRepository
 from app.domain.repositories.vote_repository import VoteRepository
+from app.application.services.notification_delivery_service import (
+    NotificationDeliveryService,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +22,13 @@ class NotificationService:
     def __init__(
         self,
         notification_repo: NotificationRepository,
+        user_repo: UserRepository,
         comment_repo: CommentRepository,
         reaction_repo: ReactionRepository,
         vote_repo: VoteRepository,
     ):
         self.notification_repo = notification_repo
+        self.delivery_service = NotificationDeliveryService(notification_repo, user_repo)
         self.comment_repo = comment_repo
         self.reaction_repo = reaction_repo
         self.vote_repo = vote_repo
@@ -105,7 +111,7 @@ class NotificationService:
                 for user_id in recipients
             ]
 
-            await self.notification_repo.create_bulk(notifications)
+            await self.delivery_service.deliver(notifications)
             logger.info(
                 "Created %d notifications (type=%s, target=%s/%s)",
                 len(notifications),
