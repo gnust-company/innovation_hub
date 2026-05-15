@@ -261,7 +261,7 @@ export const IdeasTab: React.FC<IdeasTabProps> = ({ event }) => {
                 onClick={() => setPage(p => p - 1)}
                 leftIcon={<ChevronLeft className="h-4 w-4" />}
               >
-                {t('common.prev')}
+                {t('common.previous')}
               </Button>
               <span className="text-sm text-muted-foreground">
                 {page} / {totalPages}
