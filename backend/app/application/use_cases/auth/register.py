@@ -3,6 +3,10 @@ from uuid import UUID
 
 from app.application.dto.user_dto import CreateUserDTO, UserResponseDTO
 from app.application.services.jwt_service import JWTService
+from app.core.email_policy import (
+    allowed_email_domains_message,
+    is_allowed_company_email,
+)
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.value_objects.email import Email
@@ -39,6 +43,8 @@ class RegisterUseCase:
         
         # Check if email exists
         if dto.email:
+            if not is_allowed_company_email(str(dto.email)):
+                raise ValueError(allowed_email_domains_message())
             existing_email = await self.user_repo.get_by_email(dto.email)
             if existing_email:
                 raise ValueError(f"Email '{dto.email}' is already registered")

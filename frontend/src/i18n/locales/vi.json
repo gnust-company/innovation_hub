@@ -406,6 +406,7 @@
     "avatar_size_error": "Ảnh phải nhỏ hơn 10MB",
     "profile_updated": "Đã cập nhật hồ sơ!",
     "profile_error": "Không thể cập nhật hồ sơ",
+    "email_already_registered": "Email này đã được người khác sử dụng",
     "password_changed": "Đã đổi mật khẩu!",
     "password_error": "Không thể đổi mật khẩu. Kiểm tra lại mật khẩu hiện tại.",
     "language": "Ngôn ngữ",

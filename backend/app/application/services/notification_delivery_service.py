@@ -10,6 +10,7 @@ from app.application.services.notification_email_template import (
     build_notification_link,
 )
 from app.core.config import get_settings
+from app.core.email_policy import is_allowed_company_email
 from app.domain.entities.notification import Notification
 from app.domain.repositories.notification_repository import NotificationRepository
 from app.domain.repositories.user_repository import UserRepository
@@ -92,6 +93,13 @@ class NotificationDeliveryService:
             recipient = users_by_id.get(notification.user_id)
             if not recipient or not recipient.is_active or not recipient.email:
                 continue
+            recipient_email = str(recipient.email)
+            if not is_allowed_company_email(recipient_email):
+                logger.warning(
+                    "Skipping notification email to disallowed domain for user %s",
+                    recipient.id,
+                )
+                continue
 
             link = build_notification_link(notification, self.settings.app_public_url)
             if not link:
@@ -109,7 +117,7 @@ class NotificationDeliveryService:
             )
             jobs.append(
                 EmailJob(
-                    target_email=str(recipient.email),
+                    target_email=recipient_email,
                     title=subject,
                     content=body,
                 )

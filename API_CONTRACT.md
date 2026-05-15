@@ -69,7 +69,7 @@ Authorization: Bearer <access_token>
 {
   "username": "string (3-50 ký tự, bắt buộc)",
   "password": "string (8-128 ký tự, bắt buộc)",
-  "email": "string (email hợp lệ, tùy chọn)",
+  "email": "string (email hợp lệ thuộc ALLOWED_EMAIL_DOMAINS, tùy chọn)",
   "full_name": "string (tối đa 100 ký tự, tùy chọn)",
   "team": "string (tối đa 50 ký tự, tùy chọn)"
 }
@@ -175,7 +175,7 @@ Authorization: Bearer <access_token>
 **Request Body (tất cả tùy chọn):**
 ```json
 {
-  "email": "string (email)",
+  "email": "string (email thuộc ALLOWED_EMAIL_DOMAINS)",
   "full_name": "string",
   "team": "string",
   "avatar_url": "string"
@@ -200,7 +200,7 @@ Authorization: Bearer <access_token>
 **Request Body (tất cả tùy chọn):**
 ```json
 {
-  "email": "string (email)",
+  "email": "string (email thuộc ALLOWED_EMAIL_DOMAINS)",
   "full_name": "string",
   "team": "string",
   "role": "member | admin",
@@ -909,7 +909,8 @@ Với notification trên `event_idea` cần nêu rõ cả idea và Event. `targe
 
 - Khi backend tạo in-app notification, hệ thống có thể gửi thêm email nội bộ qua mail-sender agent cho các loại quan trọng: `comment_added`, `event_scored`, `event_join_request`, `team_disbanded`.
 - Email được queue sau khi in-app notification đã persist thành công; phần gọi HTTP tới mail-sender chạy nền để không chặn request nghiệp vụ. Reaction, vote, đổi trạng thái, tạo event/idea/team lead, nộp ý tưởng vào Event (`event_idea_submitted`)... vẫn chỉ tạo in-app notification để tránh spam email.
-- Email chỉ gửi nếu `MAIL_SENDER_ENABLED=true`, `MAIL_SENDER_API_KEY` có giá trị, user nhận thông báo đang active, có email, và `APP_PUBLIC_URL` được cấu hình để tạo link tuyệt đối.
+- Email chỉ gửi nếu `MAIL_SENDER_ENABLED=true`, `MAIL_SENDER_API_KEY` có giá trị, user nhận thông báo đang active, có email thuộc `ALLOWED_EMAIL_DOMAINS`, và `APP_PUBLIC_URL` được cấu hình để tạo link tuyệt đối.
+- Mail sender có guard cuối cùng: mọi `target_emails`, `cc_target_emails`, `bcc_target_emails` ngoài domain allowlist đều bị skip trước khi gọi endpoint mail nội bộ.
 - Email luôn là **best-effort**: lỗi endpoint mail, timeout, thiếu email hoặc thiếu config chỉ được log; API nghiệp vụ và in-app notification không bị fail.
 - Subject email có prefix `[NO_REPLY][Innovation Hub]`.
 - Nội dung email ngắn gọn, có icon theo loại thông báo, gồm lời chào người nhận, câu giới thiệu đây là thông báo từ nền tảng Innovation Hub, nội dung chính, và CTA in nghiêng. Tên người nhận trong lời chào được in nghiêng, title của object chính được in đậm. Nội dung chính phải nêu rõ object/context: Problem, ý tưởng trong Idea Lab, ý tưởng trong Event, Event hoặc Team. Escape toàn bộ dữ liệu động, không render raw HTML/comment. Link không hiển thị URL thô mà nằm sau text `nhấn vào đây`.

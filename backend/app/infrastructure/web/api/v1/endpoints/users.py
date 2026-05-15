@@ -17,7 +17,12 @@ from app.application.dto.user_dto import (
     UserListResponseDTO,
     UserStatsDTO,
 )
+from app.core.email_policy import (
+    allowed_email_domains_message,
+    is_allowed_company_email,
+)
 from app.domain.value_objects.role import UserRole
+from app.domain.value_objects.email import Email
 from app.infrastructure.database.models.problem_model import ProblemModel
 from app.infrastructure.database.models.idea_model import IdeaModel
 from app.infrastructure.database.models.comment_model import CommentModel
@@ -31,6 +36,35 @@ from app.application.services.agent_proxy_service import AgentProxyService
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def _email_value(value) -> str:
+    return str(value).strip()
+
+
+async def _apply_email_update(
+    user,
+    email,
+    user_repo: SQLUserRepository,
+) -> None:
+    if email is None:
+        user.email = None
+        return
+
+    email_value = _email_value(email)
+    if not is_allowed_company_email(email_value):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=allowed_email_domains_message(),
+        )
+
+    existing = await user_repo.get_by_email(email_value)
+    if existing and existing.id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Email '{email_value}' is already registered",
+        )
+    user.email = Email(email_value)
 
 
 @router.get("/me", response_model=UserResponseDTO)
@@ -142,6 +176,8 @@ async def update_current_user(
         user.team = data.team
     if data.avatar_url is not None:
         user.avatar_url = data.avatar_url
+    if "email" in data.model_fields_set:
+        await _apply_email_update(user, data.email, user_repo)
 
     updated = await user_repo.update(user)
     return UserResponseDTO.model_validate(updated)
@@ -170,6 +206,8 @@ async def admin_update_user(
         user.role = UserRole(data.role)
     if data.is_active is not None:
         user.is_active = data.is_active
+    if "email" in data.model_fields_set:
+        await _apply_email_update(user, data.email, user_repo)
 
     updated = await user_repo.update(user)
     return UserResponseDTO.model_validate(updated)

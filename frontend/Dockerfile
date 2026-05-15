@@ -5,7 +5,9 @@ WORKDIR /app
 
 # Accept build arg
 ARG VITE_API_URL=http://localhost:8000
+ARG VITE_ALLOWED_EMAIL_DOMAINS=@company.com
 ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_ALLOWED_EMAIL_DOMAINS=${VITE_ALLOWED_EMAIL_DOMAINS}
 
 # Copy package files
 COPY package*.json ./

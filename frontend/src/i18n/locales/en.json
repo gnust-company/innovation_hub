@@ -412,6 +412,7 @@
     "avatar_size_error": "Image must be under 10MB",
     "profile_updated": "Profile updated!",
     "profile_error": "Failed to update profile",
+    "email_already_registered": "This email is already registered by another user",
     "password_changed": "Password changed!",
     "password_error": "Failed to change password. Check your current password.",
     "language": "Language",

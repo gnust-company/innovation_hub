@@ -5,6 +5,10 @@ from typing import Optional
 import httpx
 
 from app.core.config import get_settings
+from app.core.email_policy import (
+    allowed_email_domains_message,
+    is_allowed_company_email,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +38,14 @@ class InternalMailService:
             logger.warning("Mail sender enabled but MAIL_SENDER_API_KEY is empty")
             return False
         if not target_email:
+            return False
+        if not self._all_recipients_allowed(
+            target_email, cc_target_emails, bcc_target_emails
+        ):
+            logger.warning(
+                "Blocked mail sender request outside allowed domains. %s",
+                allowed_email_domains_message(),
+            )
             return False
 
         payload = {
@@ -73,6 +85,22 @@ class InternalMailService:
         except Exception:
             logger.exception("Unexpected mail sender error for %s", target_email)
         return False
+
+    @staticmethod
+    def _split_recipient_list(value: str) -> list[str]:
+        return [
+            item.strip()
+            for item in value.replace(";", ",").split(",")
+            if item.strip()
+        ]
+
+    def _all_recipients_allowed(self, *recipient_fields: str) -> bool:
+        recipients = []
+        for field in recipient_fields:
+            recipients.extend(self._split_recipient_list(field))
+        return bool(recipients) and all(
+            is_allowed_company_email(recipient) for recipient in recipients
+        )
 
 
 _mail_service: Optional[InternalMailService] = None

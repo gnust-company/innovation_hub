@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     mail_sender_api_key: str = ""
     mail_sender_timeout_seconds: float = 10.0
     app_public_url: str = ""
+    allowed_email_domains: List[str] = ["@company.com"]
 
     # CORS
     cors_origins: List[str] = ["*"]
@@ -68,6 +69,18 @@ class Settings(BaseSettings):
         """Parse CORS origins from string or list."""
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
+        elif isinstance(v, list):
+            return v
+        return []
+
+    @field_validator("allowed_email_domains", mode="before")
+    @classmethod
+    def assemble_allowed_email_domains(
+        cls, v: Optional[Union[str, List[str]]]
+    ) -> List[str]:
+        """Parse allowed email domains from a comma-separated string or list."""
+        if isinstance(v, str) and not v.startswith("["):
+            return [i.strip() for i in v.split(",") if i.strip()]
         elif isinstance(v, list):
             return v
         return []

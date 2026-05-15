@@ -13,10 +13,12 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { classNames } from '@/utils/helpers';
+import { allowedEmailDomainsMessage, isAllowedCompanyEmail } from '@/utils/emailPolicy';
 
 const profileSchema = z.object({
   full_name: z.string().max(100, 'Max 100 characters').optional().or(z.literal('')),
-  email: z.string().email('Invalid email').optional().or(z.literal('')),
+  email: z.string().email('Invalid email').optional().or(z.literal(''))
+    .refine(isAllowedCompanyEmail, allowedEmailDomainsMessage()),
   team: z.string().max(50, 'Max 50 characters').optional().or(z.literal('')),
 });
 
@@ -107,12 +109,16 @@ export const UserSettingsPage: React.FC = () => {
     try {
       await updateProfile({
         full_name: data.full_name || undefined,
-        email: data.email || undefined,
+        email: data.email || null,
         team: data.team || undefined,
       });
       showToast({ type: 'success', message: t('settings.profile_updated') });
-    } catch {
-      showToast({ type: 'error', message: t('settings.profile_error') });
+    } catch (err: unknown) {
+      const detail = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      const message = detail?.includes('already registered')
+        ? t('settings.email_already_registered')
+        : t('settings.profile_error');
+      showToast({ type: 'error', message });
     }
   };
 

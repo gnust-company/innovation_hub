@@ -14,7 +14,7 @@ interface AuthState {
   register: (data: UserRegister) => Promise<void>;
   logout: () => void;
   fetchCurrentUser: () => Promise<void>;
-  updateProfile: (data: { email?: string; full_name?: string; team?: string; avatar_url?: string }) => Promise<void>;
+  updateProfile: (data: { email?: string | null; full_name?: string; team?: string; avatar_url?: string }) => Promise<void>;
   clearError: () => void;
 }
 

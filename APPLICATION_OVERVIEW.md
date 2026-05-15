@@ -225,6 +225,8 @@ Tổng tối đa = 8 × 12.5 = 100 điểm
 
 Thông báo được tạo trong nền tảng và có thể gửi thêm email nội bộ nếu cấu hình mail-sender được bật. Email chỉ áp dụng cho các thông báo quan trọng (`comment_added`, `event_scored`, `event_join_request`, `team_disbanded`), còn nộp ý tưởng vào Event (`event_idea_submitted`), reaction, vote và các thay đổi ít khẩn cấp khác chỉ tạo in-app notification để tránh spam. Email được gửi nền sau khi in-app notification persist thành công để không chặn request nghiệp vụ. Email là best-effort, subject có prefix `[NO_REPLY][Innovation Hub]`, nội dung ngắn gọn có icon, in nghiêng tên người nhận trong lời chào, in đậm title của object chính, nêu rõ object/context (Problem, Idea Lab, Event Idea, Event/Team) và luôn có link `nhấn vào đây` trỏ về nội dung liên quan trong Innovation Hub. Riêng comment trên Event Idea phải hiển thị rõ dạng `ý tưởng "{idea_title}" trong Event "{event_title}"`.
 
+Email người dùng và người nhận mail nội bộ phải thuộc domain allowlist cấu hình bằng `ALLOWED_EMAIL_DOMAINS` (ví dụ `@company.com`). FE chặn sớm ở form đăng ký/cập nhật hồ sơ, BE reject trước khi lưu DB, và mail-sender client kiểm tra lần cuối để không gửi ra email ngoài công ty.
+
 #### Quyền riêng tư & Độc lập:
 
 ```

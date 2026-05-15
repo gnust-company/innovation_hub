@@ -10,11 +10,13 @@ import { useUIStore } from '@/stores/uiStore';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { allowedEmailDomainsMessage, isAllowedCompanyEmail } from '@/utils/emailPolicy';
 
 const registerSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
   password: z.string().min(8, 'Password must be at least 8 characters').max(128, 'Max 128 characters'),
-  email: z.string().email('Invalid email address').optional().or(z.literal('')),
+  email: z.string().email('Invalid email address').optional().or(z.literal(''))
+    .refine(isAllowedCompanyEmail, allowedEmailDomainsMessage()),
   full_name: z.string().optional(),
   team: z.string().optional(),
 });

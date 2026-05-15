@@ -76,6 +76,7 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_URL=/api/v1
+        - VITE_ALLOWED_EMAIL_DOMAINS=${ALLOWED_EMAIL_DOMAINS:-@company.com}
     container_name: innovation_hub_frontend
     restart: always
     ports:
