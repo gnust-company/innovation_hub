@@ -15,6 +15,8 @@ from .event_idea_model import EventIdeaModel
 from .event_award_model import EventAwardModel, EventAwardTeamModel
 from .event_score_model import EventScoreModel
 from .event_scoring_criteria_model import EventScoringCriteriaModel
+from .chat_session_model import ChatSessionModel
+from .chat_message_model import ChatMessageModel
 
 __all__ = [
     "BaseModel",
@@ -35,4 +37,6 @@ __all__ = [
     "EventAwardTeamModel",
     "EventScoreModel",
     "EventScoringCriteriaModel",
+    "ChatSessionModel",
+    "ChatMessageModel",
 ]

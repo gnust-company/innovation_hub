@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
 from app.core.config import get_settings
+from app.infrastructure.database.models import *  # noqa: F401, F403 — register all mappers
 from app.infrastructure.database.models.user_model import UserModel
 from app.infrastructure.security.password import PasswordHasher
 
